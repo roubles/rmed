@@ -1,0 +1,94 @@
+#!/bin/bash
+function getGitId {
+    HEX=$1
+    while read -r line; do
+        SHA1=$(git rev-parse $line:$FILEPATH)
+        if [[ "$SHA1" == "$HEX"  ]]; then
+            GITID=$line
+        fi
+    done <<< "$LISTGITIDs"
+}
+
+#$1   $2       $3      $4       $5       $6      $7
+#path old-file old-hex old-mode new-file new-hex new-mode
+echo $1 $2 $3 $4 $5 $6 $7
+
+GIT=$(type -p git)
+VIM=$(type -p vim)
+TR=$(type -p tr)
+
+ROOT=$($GIT rev-parse --show-toplevel 2>/dev/null)
+if [ $? -ne 0 ]; then
+    echo "Not a git repo. Exiting."
+    exit 1
+fi
+
+FILEPATH=$1
+OLDFILE=$2
+OLDHEX=$3
+NEWFILE=$5
+NEWHEX=$6
+
+DIFF_ROOT=$ROOT/diffs
+INDEX_HTML=$DIFF_ROOT/index.html
+
+FILE=$(echo $FILEPATH | $TR '/' '_')
+
+if [ -f ~/.rmed/github.vim ]; then
+    VIM="$VIM -u ~/.rmed/github.vim"
+fi 
+
+LISTGITIDs=$(git rev-list HEAD -- $FILEPATH)
+
+GITID=""
+getGitId $OLDHEX
+OLDGITID=$GITID
+
+GITID=""
+getGitId $NEWHEX
+NEWGITID=$GITID
+
+echo "Diffing $FILEPATH previous version($OLDHEX) with current version($NEWHEX)"
+$VIM -n -c TOhtml -c "w! $DIFF_ROOT/$FILE.html | qall!" -R -d "$OLDFILE" "$NEWFILE"
+if [[ "$OLDHEX" == '.' ]]; then # added
+    CLASS="added"
+    LEFT="non-existant"
+    RIGHT=$(echo "$FILEPATH (added)" | sed 's_/_\\/_g')
+    _FILEPATH=$(echo $FILEPATH | sed 's_/_\\/_g')
+    sed -i '' "s/<th>.*\/dev\/null.*/<th>$LEFT<\/th>/g" $DIFF_ROOT/$FILE.html
+    sed -i '' "s/<th>.*$_FILEPATH*/<th>$RIGHT<\/th>/g" $DIFF_ROOT/$FILE.html
+elif [[ "$NEWHEX" == '.' ]]; then # deleted
+    CLASS="deleted"
+    LEFT="$OLDGITID:$FILEPATH"
+    LEFT=$(echo $LEFT | sed 's_/_\\/_g')
+    RIGHT="deleted"
+    _OLDFILE=$(echo $OLDFILE | sed 's_/_\\/_g')
+    sed -i '' "s/<th>.*$(basename $_OLDFILE).*/<th>$LEFT<\/th>/g" $DIFF_ROOT/$FILE.html
+    sed -i '' "s/<th>.*\/dev\/null.*/<th>$RIGHT<\/th>/g" $DIFF_ROOT/$FILE.html
+else # changed
+    CLASS="modified"
+
+    LEFT="$OLDGITID:$FILEPATH"
+    LEFT=$(echo $LEFT | sed 's_/_\\/_g')
+    _OLDFILE=$(echo $OLDFILE | sed 's_/_\\/_g')
+    sed -i '' "s/<th>.*$(basename $_OLDFILE).*/<th>$LEFT<\/th>/g" $DIFF_ROOT/$FILE.html
+
+    if [[ "$NEWGITID" == "" ]]; then
+        RIGHT="$FILEPATH (modified)"
+        RIGHT=$(echo $RIGHT | sed 's_/_\\/_g')
+        _NEWFILE=$(echo $NEWFILE | sed 's_/_\\/_g')
+        sed -i '' "s/<th>\s*$_NEWFILE.*/<th>$RIGHT<\/th>/g" $DIFF_ROOT/$FILE.html
+    else
+        RIGHT="$NEWGITID:$FILEPATH"
+        RIGHT=$(echo $RIGHT | sed 's_/_\\/_g')
+        _NEWFILE=$(echo $NEWFILE | sed 's_/_\\/_g')
+        sed -i '' "s/<th>.*$(basename $_NEWFILE).*/<th>$RIGHT<\/th>/g" $DIFF_ROOT/$FILE.html
+    fi
+
+
+fi
+echo "<tr class="$CLASS">" >> $INDEX_HTML
+echo "<td><a href=\"$DIFF_ROOT/$FILE.html\">$FILEPATH</a></td>" >> $INDEX_HTML
+echo "<td>$CLASS</td>" >> $INDEX_HTML
+echo "</tr>" >> $INDEX_HTML
+

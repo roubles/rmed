@@ -1,0 +1,50 @@
+#!/bin/bash
+
+ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+if [ $? -eq 0 ]; then
+    echo "Diffing git repo root $(basename $ROOT)"
+else
+    echo "Not a git repo. Exiting."
+    exit 1
+fi
+
+DIFF_ROOT=$ROOT/diffs
+if [ -d $DIFF_ROOT ]; then 
+    echo "Removing any existing diffs in $DIFF_ROOT"
+    rm -rf $DIFF_ROOT
+fi
+
+mkdir -p $DIFF_ROOT
+echo "Will Store diffs in $DIFF_ROOT"
+
+INDEX_HTML=$DIFF_ROOT/index.html
+git diff $@ > $DIFF_ROOT/diffs.txt
+export GIT_EXTERNAL_DIFF=rmed-vimdiff
+echo "<html>" >> $INDEX_HTML
+echo "<style>" >> $INDEX_HTML
+echo "table.fixed {table-layout:fixed; width:100%;}" >> $INDEX_HTML
+echo "table.fixed td {overflow:hidden;}" >> $INDEX_HTML
+echo "table.fixed td:nth-of-type(1) {width:99%;}" >> $INDEX_HTML
+echo "table.fixed td:nth-of-type(2) {width:100px;}" >> $INDEX_HTML
+echo "tr.deleted td { background-color: #FFDDDD; word-wrap: break-word; }" >> $INDEX_HTML
+echo "tr.added td { background-color: #DDFFDD; word-wrap: break-word; }" >> $INDEX_HTML
+echo "tr.modified td { background-color: #DDDDFF; word-wrap: break-word; }" >> $INDEX_HTML
+echo "p { font-family: "Lucida Console", Monaco, monospace; }" >> $INDEX_HTML
+echo "tr { font-family: "Lucida Console", Monaco, monospace; }" >> $INDEX_HTML
+echo "</style>" >> $INDEX_HTML
+echo "<p>>$ git diff $@</p>" >> $INDEX_HTML
+echo "<br>" >> $INDEX_HTML
+echo "<br>" >> $INDEX_HTML
+echo "<table class=\"fixed\">" >> $INDEX_HTML
+echo "<tr>" >> $INDEX_HTML
+echo "<td><b>Filename</b></td>" >> $INDEX_HTML
+echo "<td><b>State<b></td>" >> $INDEX_HTML
+echo "</tr>" >> $INDEX_HTML
+git --no-pager diff $@
+echo "</table>" >> $INDEX_HTML
+echo "<br>" >> $INDEX_HTML
+echo "<br>" >> $INDEX_HTML
+echo "<br>" >> $INDEX_HTML
+echo "<p><a href="$DIFF_ROOT/diffs.txt">Text diffs</a></p>" >> $INDEX_HTML
+echo "</html>" >> $INDEX_HTML
+echo "Diffs are here $INDEX_HTML"
