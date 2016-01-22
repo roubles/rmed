@@ -142,13 +142,13 @@ if [ $OLDFILEISTEXT -eq 1 ] && [ $NEWFILEISTEXT -eq 1 ]; then
         fi
     fi
     echo "<tr class="$CLASS">" >> $INDEX_HTML
-    echo "<td>[<a href=\"$HTTP_BASE_ROOT/$FILE.html\">html</a>|<a href=\"$HTTP_BASE_ROOT/$FILE.txt\">txt</a>]</td>" >> $INDEX_HTML
+    echo "<td>[<a href=\"$FILE.html\">html</a>|<a href=\"$FILE.txt\">txt</a>]</td>" >> $INDEX_HTML
     echo "<td>$FILEPATH </td>" >> $INDEX_HTML
     echo "<td>$CLASS</td>" >> $INDEX_HTML
     echo "</tr>" >> $INDEX_HTML
 else
     echo "<tr class="$CLASS">" >> $INDEX_HTML
-    echo "<td>[bin |<a href=\"$HTTP_BASE_ROOT/$FILE.txt\">txt</a>]</td>" >> $INDEX_HTML
+    echo "<td>[bin |<a href=\"$FILE.txt\">txt</a>]</td>" >> $INDEX_HTML
     echo "<td>$FILEPATH </td>" >> $INDEX_HTML
     echo "<td>$CLASS</td>" >> $INDEX_HTML
     echo "</tr>" >> $INDEX_HTML
