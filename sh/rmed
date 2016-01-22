@@ -92,10 +92,12 @@ else
 fi
 
 if [ $NODATE -eq 1 ]; then
-    export RMED_DIFF_ROOT=$ROOTDIR/rmed/$USER/$REPONAME/diffs
+    DIFFDIR="rmed/$USER/$REPONAME/diffs"
 else
-    export RMED_DIFF_ROOT=$ROOTDIR/rmed/$USER/$REPONAME/$DATE/diffs
+    DIFFDIR="rmed/$USER/$REPONAME/$DATE/diffs"
 fi
+export RMED_DIFF_ROOT=$ROOTDIR/$DIFFDIR
+
 mkdir -p $RMED_DIFF_ROOT
 echo "Will Store diffs in $RMED_DIFF_ROOT"
 echo "Diff command will be: $GIT diff "${parms[@]}""
@@ -150,7 +152,7 @@ echo "</html>" >> $INDEX_HTML
 echo "Diffs are here $INDEX_HTML"
 
 if [[ "$HTTPBASEURL" != "" ]]; then
-    echo "Diffs are web accessible here: $HTTPBASEURL/$INDEX_HTML"
+    echo "Diffs are web accessible here: $HTTPBASEURL/$ROOTDIR/index.html"
 fi
 
 function launch_mac_browser() {
