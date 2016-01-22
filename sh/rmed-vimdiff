@@ -55,7 +55,7 @@ fi
 
 LISTGITIDs=$(git rev-list HEAD -- $FILEPATH)
 
-function getGitId {
+function getGitCommitId {
     HEX=$1
     while read -r line; do
         SHA1=$(git rev-parse $line:$FILEPATH)
@@ -66,11 +66,11 @@ function getGitId {
 }
 
 GITID=""
-getGitId $OLDHEX
+getGitCommitId $OLDHEX
 OLDGITID=$GITID
 
 GITID=""
-getGitId $NEWHEX
+getGitCommitId $NEWHEX
 NEWGITID=$GITID
 
 echo "Diffing $FILEPATH previous version($OLDHEX) with current version($NEWHEX)"
