@@ -8,18 +8,24 @@ rmed does that. It relies heavily on bash, sed, vim, and obviously git, so it is
 
 To install, just clone the repo, and run ../install.sh. Tada!
 
-When run, it generates a file list (obligatory screenshot): ![alt tag](https://raw.githubusercontent.com/roubles/rmed/master/doc/filelist.jpg)
+When run, it generates diffs, and launches a browser to the file list (obligatory screenshot): ![alt tag](https://raw.githubusercontent.com/roubles/rmed/master/doc/filelist.jpg)
 
 And for textual files, it generates side by side diffs (hat tip to vim): ![alt tag](https://raw.githubusercontent.com/roubles/rmed/master/doc/diffs.jpg)
 
 ## Sailent Features
-* Uses very portable tools. This may be a lie. sed if notoriously different on different platforms.
+* Uses very portable tools. (This may be a lie, sed is notoriously unportable).
 * Takes the same command line arguments as 'git diff'
 * Generates text diffs for each individual file and full text diffs
 * Generates side by side color diffs for all text files using a github colorscheme. Well, as close as I could get the colorscheme.
 * Works out of the box of OSX and many, dare I say, all, linuxes. Don't own a windows machine anymore - can't test there.
 
 ## Usage
+You should just be able to run:
+```
+$ rmed <your git diff options>
+```
+
+But there are some rmed specifc command line arguments:
 ```
 $ rmed --help
 usage: rmed [--diff-directory /path/to/some/folder] [--no-launch-broswer] [--rmed-help] <regular git diff parameters>
@@ -55,5 +61,11 @@ $ sudo ./install.sh --prefix /path/to/my/location
 ## Uninstall
 ```
 $ cd rmed
-$ sudo ./install.sh
+$ sudo ./uninstall.sh
+```
+
+## Custom Directory Uninstall
+```
+$ cd rmed
+$ sudo ./uninstall.sh --prefix /path/to/my/location
 ```
