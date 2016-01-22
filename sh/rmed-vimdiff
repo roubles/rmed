@@ -32,17 +32,10 @@ else
     fi
 fi
 
-DEFAULTVIM=$(type -p vim) || { echo >&2 "vim not installed. Exiting..."; exit 1; }
-if [ -z $VIM ]; then
-    VIM=$DEFAULTVIM
-fi
-#echo "Using vim=$VIM"
-
 if [ -z $RMED_VIM ]; then
     echo "Could not find rmed.vim. Not applying rmed's github color scheme."
 else
-    #echo "Using rmed.vim from: $RMED_VIM"
-    VIM="$VIM -u $RMED_VIM"
+    MYVIM="$MYVIM -u $RMED_VIM"
 fi
 
 if [ "$(uname)" == "Darwin" ]; then
@@ -74,8 +67,6 @@ getGitCommitId $NEWHEX
 NEWGITID=$GITID
 
 echo "Diffing $FILEPATH previous version($OLDHEX) with current version($NEWHEX)"
-#echo "$VIM -n -c TOhtml -c \"w! $RMED_DIFF_ROOT/$FILE.html | qall!\" -d \"$OLDFILE\" \"$NEWFILE\"" 
-
 if [[ "$OLDHEX" == '.' ]]; then # added
     CLASS="added"
 elif [[ "$NEWHEX" == '.' ]]; then # deleted
@@ -107,7 +98,8 @@ NEWFILEISTEXT=$ISTEXTFILE
 
 if [ $OLDFILEISTEXT -eq 1 ] && [ $NEWFILEISTEXT -eq 1 ]; then 
     export TERM="xterm-256color"
-    $VIM -n -c TOhtml -c "w! $RMED_DIFF_ROOT/$FILE.html | qall!" -d "$OLDFILE" "$NEWFILE" > /dev/null 2>&1
+    #echo "$MYVIM +TOhtml \"+w! $RMED_DIFF_ROOT/$FILE.html\"  '+qall!' -n -d $OLDFILE $NEWFILE"
+    $MYVIM +TOhtml "+w! $RMED_DIFF_ROOT/$FILE.html"  '+qall!' -n -d $OLDFILE $NEWFILE
     $GIT diff "$OLDFILE" "$NEWFILE" > $RMED_DIFF_ROOT/$FILE.txt
     if [[ "$OLDHEX" == '.' ]]; then # added
         CLASS="added"

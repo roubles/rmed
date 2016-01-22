@@ -8,6 +8,7 @@ if [ -z $TMPDIR ]; then
     TMPDIR="/tmp" 
 fi
 
+export MYVIM=$(type -p vim) || { echo >&2 "vim not installed."; }
 ROOTDIR=$TMPDIR
 LAUNCHBROWSER=1
 NODATE=0
@@ -39,7 +40,7 @@ setArgs () {
                           unset parms[$var]
                           var=$((var+1))
                           shift
-                          export VIM="$1"
+                          export MYVIM="$1"
                           unset parms[$var]
                           ;;
       "--no-launch-browser")
@@ -73,8 +74,11 @@ else
 fi
 echo "Diffing local repo [$REPONAME]"
 
-if [ ! -z $VIM ]; then
-    echo "Using vim from: $VIM"
+if [ -z $MYVIM ]; then
+    echo "Did not find vim. Exiting..."
+    exit 4
+else
+    echo "Using vim from: $MYVIM"
 fi
 
 if [ $NODATE -eq 1 ]; then
@@ -101,7 +105,6 @@ else
 fi
 echo "Using rmed-vimdiff from: $RMEDVIMDIFF"
 
-export GIT_EXTERNAL_DIFF=$RMEDVIMDIFF
 echo "<html>" >> $INDEX_HTML
 echo "<style>" >> $INDEX_HTML
 echo "table.fixed {table-layout:fixed; width:100%;}" >> $INDEX_HTML
@@ -125,6 +128,7 @@ echo "<td><b>Diffs</b></td>" >> $INDEX_HTML
 echo "<td><b>Filename</b></td>" >> $INDEX_HTML
 echo "<td><b>State<b></td>" >> $INDEX_HTML
 echo "</tr>" >> $INDEX_HTML
+export GIT_EXTERNAL_DIFF=$RMEDVIMDIFF
 $GIT --no-pager diff "${parms[@]}"
 echo "</table>" >> $INDEX_HTML
 echo "<br>" >> $INDEX_HTML
