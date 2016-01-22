@@ -4,7 +4,6 @@
 #path old-file old-hex old-mode new-file new-hex new-mode
 #echo $1 $2 $3 $4 $5 $6 $7
 GIT=$(type -p git) || { echo >&2 "git not installed. Exiting..."; exit 1; }
-VIM=$(type -p vim) || { echo >&2 "vim not installed. Exiting..."; exit 1; }
 TR=$(type -p tr) || { echo >&2 "tr not installed. Exiting..."; exit 1; } #TODO: remove tr
 SED=$(type -p sed) || { echo >&2 "sed not installed. Exiting..."; exit 1; }
 
@@ -25,14 +24,26 @@ INDEX_HTML=$RMED_DIFF_ROOT/index.html
 FILE=$(echo $FILEPATH | $TR '/' '_')
 
 if [ -f /usr/local/etc/rmed.vim ]; then
-    VIM="$VIM -u /usr/local/etc/rmed.vim"
+    RMED_VIM=/usr/local/etc/rmed.vim
 else
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     if [ -f "$DIR/rmed.vim" ]; then
-        VIM="$VIM -u $DIR/rmed.vim"
+        RMED_VIM="$DIR/rmed.vim"
     fi
-fi 
-echo "vim=$VIM"
+fi
+
+DEFAULTVIM=$(type -p vim) || { echo >&2 "vim not installed. Exiting..."; exit 1; }
+if [ -z $VIM ]; then
+    VIM=$DEFAULTVIM
+fi
+echo "Using vim=$VIM"
+
+if [ -z $RMED_VIM ]; then
+    echo "Could not find rmed.vim. Not applying rmed's github color scheme."
+else
+    echo "Using rmed.vim from: $RMED_VIM"
+    VIM="$VIM -u $RMED_VIM"
+fi
 
 if [ "$(uname)" == "Darwin" ]; then
     SEDi="$SED -i '' "
@@ -63,46 +74,85 @@ getGitId $NEWHEX
 NEWGITID=$GITID
 
 echo "Diffing $FILEPATH previous version($OLDHEX) with current version($NEWHEX)"
-echo "$VIM -n -c TOhtml -c \"w! $RMED_DIFF_ROOT/$FILE.html | qall!\" -d \"$OLDFILE\" \"$NEWFILE\"" 
-$VIM -n -c TOhtml -c "w! $RMED_DIFF_ROOT/$FILE.html | qall!" -d "$OLDFILE" "$NEWFILE" > /dev/null 2>&1
-$GIT diff "$OLDFILE" "$NEWFILE" > $RMED_DIFF_ROOT/$FILE.txt
+#echo "$VIM -n -c TOhtml -c \"w! $RMED_DIFF_ROOT/$FILE.html | qall!\" -d \"$OLDFILE\" \"$NEWFILE\"" 
+
 if [[ "$OLDHEX" == '.' ]]; then # added
     CLASS="added"
-    LEFT="non-existant"
-    RIGHT=$(echo "$FILEPATH (added)" | $SED 's_/_\\/_g')
-    _FILEPATH=$(echo $FILEPATH | $SED 's_/_\\/_g')
-    $SEDi "s/<th>.*\/dev\/null.*/<th>$LEFT<\/th>/g" $RMED_DIFF_ROOT/$FILE.html
-    $SEDi "s/<th>.*$_FILEPATH*/<th>$RIGHT<\/th>/g" $RMED_DIFF_ROOT/$FILE.html
 elif [[ "$NEWHEX" == '.' ]]; then # deleted
     CLASS="deleted"
-    LEFT="$OLDGITID:$FILEPATH"
-    LEFT=$(echo $LEFT | $SED 's_/_\\/_g')
-    RIGHT="deleted"
-    _OLDFILE=$(echo $OLDFILE | $SED 's_/_\\/_g')
-    $SEDi "s/<th>.*$(basename $_OLDFILE).*/<th>$LEFT<\/th>/g" $RMED_DIFF_ROOT/$FILE.html
-    $SEDi "s/<th>.*\/dev\/null.*/<th>$RIGHT<\/th>/g" $RMED_DIFF_ROOT/$FILE.html
 else # changed
     CLASS="modified"
-
-    LEFT="$OLDGITID:$FILEPATH"
-    LEFT=$(echo $LEFT | $SED 's_/_\\/_g')
-    _OLDFILE=$(echo $OLDFILE | $SED 's_/_\\/_g')
-    $SEDi "s/<th>.*$(basename $_OLDFILE).*/<th>$LEFT<\/th>/g" $RMED_DIFF_ROOT/$FILE.html
-
-    if [[ "$NEWGITID" == "" ]]; then
-        RIGHT="$FILEPATH (modified)"
-        RIGHT=$(echo $RIGHT | $SED 's_/_\\/_g')
-        _NEWFILE=$(echo $NEWFILE | $SED 's_/_\\/_g')
-        $SEDi "s/<th>\s*$_NEWFILE.*/<th>$RIGHT<\/th>/g" $RMED_DIFF_ROOT/$FILE.html
-    else
-        RIGHT="$NEWGITID:$FILEPATH"
-        RIGHT=$(echo $RIGHT | $SED 's_/_\\/_g')
-        _NEWFILE=$(echo $NEWFILE | $SED 's_/_\\/_g')
-        $SEDi "s/<th>.*$(basename $_NEWFILE).*/<th>$RIGHT<\/th>/g" $RMED_DIFF_ROOT/$FILE.html
-    fi
 fi
-echo "<tr class="$CLASS">" >> $INDEX_HTML
-echo "<td>[<a href=\"$RMED_DIFF_ROOT/$FILE.html\">html</a>|<a href=\"$RMED_DIFF_ROOT/$FILE.txt\">txt</a>]</td>" >> $INDEX_HTML
-echo "<td>$FILEPATH </td>" >> $INDEX_HTML
-echo "<td>$CLASS</td>" >> $INDEX_HTML
-echo "</tr>" >> $INDEX_HTML
+
+ISTEXTFILE=1
+function isTextFile() {
+   if [[ "$1" == "/dev/null" ]]; then
+       ISTEXTFILE=1
+       return
+   fi
+
+   file $1 | grep -q -E "text|empty"
+   if [ $? -eq 0 ]; then
+       ISTEXTFILE=1
+   else
+       ISTEXTFILE=0
+   fi
+}
+
+isTextFile "$OLDFILE"
+OLDFILEISTEXT=$ISTEXTFILE
+
+isTextFile "$NEWFILE"
+NEWFILEISTEXT=$ISTEXTFILE
+
+if [ $OLDFILEISTEXT -eq 1 ] && [ $NEWFILEISTEXT -eq 1 ]; then 
+    export TERM="xterm-256color"
+    $VIM -n -c TOhtml -c "w! $RMED_DIFF_ROOT/$FILE.html | qall!" -d "$OLDFILE" "$NEWFILE" > /dev/null 2>&1
+    $GIT diff "$OLDFILE" "$NEWFILE" > $RMED_DIFF_ROOT/$FILE.txt
+    if [[ "$OLDHEX" == '.' ]]; then # added
+        CLASS="added"
+        LEFT="non-existant"
+        RIGHT=$(echo "$FILEPATH (added)" | $SED 's_/_\\/_g')
+        _FILEPATH=$(echo $FILEPATH | $SED 's_/_\\/_g')
+        $SEDi "s/<th>.*\/dev\/null.*/<th>$LEFT<\/th>/g" $RMED_DIFF_ROOT/$FILE.html
+        $SEDi "s/<th>.*$_FILEPATH*/<th>$RIGHT<\/th>/g" $RMED_DIFF_ROOT/$FILE.html
+    elif [[ "$NEWHEX" == '.' ]]; then # deleted
+        CLASS="deleted"
+        LEFT="$OLDGITID:$FILEPATH"
+        LEFT=$(echo $LEFT | $SED 's_/_\\/_g')
+        RIGHT="deleted"
+        _OLDFILE=$(echo $OLDFILE | $SED 's_/_\\/_g')
+        $SEDi "s/<th>.*$(basename $_OLDFILE).*/<th>$LEFT<\/th>/g" $RMED_DIFF_ROOT/$FILE.html
+        $SEDi "s/<th>.*\/dev\/null.*/<th>$RIGHT<\/th>/g" $RMED_DIFF_ROOT/$FILE.html
+    else # changed
+        CLASS="modified"
+
+        LEFT="$OLDGITID:$FILEPATH"
+        LEFT=$(echo $LEFT | $SED 's_/_\\/_g')
+        _OLDFILE=$(echo $OLDFILE | $SED 's_/_\\/_g')
+        $SEDi "s/<th>.*$(basename $_OLDFILE).*/<th>$LEFT<\/th>/g" $RMED_DIFF_ROOT/$FILE.html
+
+        if [[ "$NEWGITID" == "" ]]; then
+            RIGHT="$FILEPATH (modified)"
+            RIGHT=$(echo $RIGHT | $SED 's_/_\\/_g')
+            _NEWFILE=$(echo $NEWFILE | $SED 's_/_\\/_g')
+            $SEDi "s/<th>\s*$_NEWFILE.*/<th>$RIGHT<\/th>/g" $RMED_DIFF_ROOT/$FILE.html
+        else
+            RIGHT="$NEWGITID:$FILEPATH"
+            RIGHT=$(echo $RIGHT | $SED 's_/_\\/_g')
+            _NEWFILE=$(echo $NEWFILE | $SED 's_/_\\/_g')
+            $SEDi "s/<th>.*$(basename $_NEWFILE).*/<th>$RIGHT<\/th>/g" $RMED_DIFF_ROOT/$FILE.html
+        fi
+    fi
+    echo "<tr class="$CLASS">" >> $INDEX_HTML
+    echo "<td>[<a href=\"$RMED_DIFF_ROOT/$FILE.html\">html</a>|<a href=\"$RMED_DIFF_ROOT/$FILE.txt\">txt</a>]</td>" >> $INDEX_HTML
+    echo "<td>$FILEPATH </td>" >> $INDEX_HTML
+    echo "<td>$CLASS</td>" >> $INDEX_HTML
+    echo "</tr>" >> $INDEX_HTML
+else
+    echo "<tr class="$CLASS">" >> $INDEX_HTML
+    echo "<td>[-binary-]</td>" >> $INDEX_HTML
+    echo "<td>$FILEPATH </td>" >> $INDEX_HTML
+    echo "<td>$CLASS</td>" >> $INDEX_HTML
+    echo "</tr>" >> $INDEX_HTML
+fi
