@@ -101,11 +101,15 @@ if [ $OLDFILEISTEXT -eq 1 ] && [ $NEWFILEISTEXT -eq 1 ]; then
     #echo "$MYVIM +TOhtml \"+w! $RMED_DIFF_ROOT/$FILE.html\"  '+qall!' -n -d $OLDFILE $NEWFILE"
     $MYVIM +TOhtml "+w! $RMED_DIFF_ROOT/$FILE.html"  '+qall!' -n -d $OLDFILE $NEWFILE > /dev/null 2>&1
     $GIT diff "$OLDFILE" "$NEWFILE" > $RMED_DIFF_ROOT/$FILE.txt
+
+    #Update title in html
+    _FILEPATH=$(echo $FILEPATH | $SED 's_/_\\/_g')
+    $SEDi "s/<title>.*<\/title>/<title>$_FILEPATH<\/title>/g" $RMED_DIFF_ROOT/$FILE.html
+
     if [[ "$OLDHEX" == '.' ]]; then # added
         CLASS="added"
         LEFT="non-existant"
         RIGHT=$(echo "$FILEPATH (added)" | $SED 's_/_\\/_g')
-        _FILEPATH=$(echo $FILEPATH | $SED 's_/_\\/_g')
         $SEDi "s/<th>.*\/dev\/null.*/<th>$LEFT<\/th>/g" $RMED_DIFF_ROOT/$FILE.html
         $SEDi "s/<th>.*$_FILEPATH*/<th>$RIGHT<\/th>/g" $RMED_DIFF_ROOT/$FILE.html
     elif [[ "$NEWHEX" == '.' ]]; then # deleted
