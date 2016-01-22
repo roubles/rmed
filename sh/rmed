@@ -131,6 +131,7 @@ echo "p { font-family: "Lucida Console", Monaco, monospace; }" >> $INDEX_HTML
 echo "tr { font-family: "Lucida Console", Monaco, monospace; }" >> $INDEX_HTML
 echo "footer { font-family: "Lucida Console", Monaco, monospace; font-size: 80%; position:fixed; bottom:0; left:5;}" >> $INDEX_HTML
 echo "</style>" >> $INDEX_HTML
+echo "<p>Repo root folder: $ROOT</p>" >> $INDEX_HTML
 echo "<p>>$ git diff ${parms[@]}</p>" >> $INDEX_HTML
 echo "<br>" >> $INDEX_HTML
 echo "<br>" >> $INDEX_HTML
