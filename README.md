@@ -4,9 +4,11 @@ I am not going to lie to you, this just may be the most excellent git difftool.
 
 I know what you are thinking, why do we need another git difftool? Well, I was looking for a simple, lightweight, portable side by side git difftool. I wanted to generate diffs in my local repo and share them with my team without actually merging or pushing my changes.
 
-rmed does that. It relies heavily on bash, sed, vim, and obviously Git. It's just a wrapper around 'git diff', so it takes the same arguments as 'git diff'. To install, just clone the repo, and run ../install.sh. Tada!
+rmed does that. It relies heavily on bash, sed, vim, and obviously git, so it is theoretically very portable. It's just a wrapper around 'git diff', so it takes the same arguments as 'git diff'. 
 
-When run, it generates a file list: ![alt tag](https://raw.githubusercontent.com/roubles/rmed/master/doc/filelist.jpg)
+To install, just clone the repo, and run ../install.sh. Tada!
+
+When run, it generates a file list (obligatory screenshot): ![alt tag](https://raw.githubusercontent.com/roubles/rmed/master/doc/filelist.jpg)
 
 And for textual files, it generates side by side diffs (hat tip to vim): ![alt tag](https://raw.githubusercontent.com/roubles/rmed/master/doc/diffs.jpg)
 
@@ -41,6 +43,13 @@ More info here: https://github.com/roubles/rmed
 $ git clone https://github.com/roubles/rmed.git
 $ cd rmed
 $ sudo ./install.sh
+```
+
+## Custom Directory Installation
+```
+$ git clone https://github.com/roubles/rmed.git
+$ cd rmed
+$ sudo ./install.sh --prefix /path/to/my/location
 ```
 
 ## Uninstall
