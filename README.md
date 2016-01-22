@@ -19,6 +19,11 @@ And for textual files, it generates side by side diffs (hat tip to vim): ![alt t
 * Generates side by side color diffs for all text files using a github colorscheme. Well, as close as I could get the colorscheme.
 * Works out of the box of OSX and many, dare I say, all, linuxes. Don't own a windows machine anymore - can't test there.
 
+## About the diffs
+rmed generates simple html diffs in a date delimited temporary folder. By default the diffs would fall into /tmp/rmed/<user>/<repo>/2016-01-22T19:23:30Z/diffs on the host machine. This folder structure provides good tracability of the repo and the time of the diffs.
+
+You can change the folder location, and dump the diffs in a commonly mounted location, or into a location that is served by a webserver - to make the diffs easily shareable. See --diff-directory.
+
 ## Usage
 You should just be able to run:
 ```
