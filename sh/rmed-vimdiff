@@ -99,7 +99,7 @@ NEWFILEISTEXT=$ISTEXTFILE
 if [ $OLDFILEISTEXT -eq 1 ] && [ $NEWFILEISTEXT -eq 1 ]; then 
     export TERM="xterm-256color"
     #echo "$MYVIM +TOhtml \"+w! $RMED_DIFF_ROOT/$FILE.html\"  '+qall!' -n -d $OLDFILE $NEWFILE"
-    $MYVIM +TOhtml "+w! $RMED_DIFF_ROOT/$FILE.html"  '+qall!' -n -d $OLDFILE $NEWFILE
+    $MYVIM +TOhtml "+w! $RMED_DIFF_ROOT/$FILE.html"  '+qall!' -n -d $OLDFILE $NEWFILE > /dev/null 2>&1
     $GIT diff "$OLDFILE" "$NEWFILE" > $RMED_DIFF_ROOT/$FILE.txt
     if [[ "$OLDHEX" == '.' ]]; then # added
         CLASS="added"
