@@ -73,6 +73,10 @@ else
 fi
 echo "Diffing local repo [$REPONAME]"
 
+if [ ! -z $VIM ]; then
+    echo "Using vim from: $VIM"
+fi
+
 if [ $NODATE -eq 1 ]; then
     export RMED_DIFF_ROOT=$ROOTDIR/rmed/$USER/$REPONAME/diffs
 else
@@ -96,6 +100,7 @@ else
     RMEDVIMDIFF=$(type -p rmed-vimdiff) || { echo >&2 "rmed-vimdiff not installed. Exiting..."; exit 1; }
 fi
 echo "Using rmed-vimdiff from: $RMEDVIMDIFF"
+
 export GIT_EXTERNAL_DIFF=$RMEDVIMDIFF
 echo "<html>" >> $INDEX_HTML
 echo "<style>" >> $INDEX_HTML

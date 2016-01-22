@@ -36,12 +36,12 @@ DEFAULTVIM=$(type -p vim) || { echo >&2 "vim not installed. Exiting..."; exit 1;
 if [ -z $VIM ]; then
     VIM=$DEFAULTVIM
 fi
-echo "Using vim=$VIM"
+#echo "Using vim=$VIM"
 
 if [ -z $RMED_VIM ]; then
     echo "Could not find rmed.vim. Not applying rmed's github color scheme."
 else
-    echo "Using rmed.vim from: $RMED_VIM"
+    #echo "Using rmed.vim from: $RMED_VIM"
     VIM="$VIM -u $RMED_VIM"
 fi
 
