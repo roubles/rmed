@@ -98,7 +98,12 @@ else
 fi
 export RMED_DIFF_ROOT=$ROOTDIR/$DIFFDIR
 
+if [ -d $RMED_DIFF_ROOT ]; then
+    echo "Removing existing $RMED_DIFF_ROOT"
+    rm -rf $RMED_DIFF_ROOT
+fi
 mkdir -p $RMED_DIFF_ROOT
+
 echo "Will Store diffs in $RMED_DIFF_ROOT"
 echo "Diff command will be: $GIT diff "${parms[@]}""
 
@@ -153,7 +158,7 @@ echo "</html>" >> $INDEX_HTML
 echo "Diffs are here $INDEX_HTML"
 
 if [[ "$HTTPBASEURL" != "" ]]; then
-    echo "Diffs are web accessible here: $HTTPBASEURL/$ROOTDIR/index.html"
+    echo "Diffs are web accessible here: $HTTPBASEURL/$DIFFDIR/index.html"
 fi
 
 function launch_mac_browser() {

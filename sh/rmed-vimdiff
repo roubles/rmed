@@ -4,7 +4,6 @@
 #path old-file old-hex old-mode new-file new-hex new-mode
 #echo $1 $2 $3 $4 $5 $6 $7
 GIT=$(type -p git) || { echo >&2 "git not installed. Exiting..."; exit 1; }
-TR=$(type -p tr) || { echo >&2 "tr not installed. Exiting..."; exit 1; } #TODO: remove tr
 SED=$(type -p sed) || { echo >&2 "sed not installed. Exiting..."; exit 1; }
 
 ROOT=$($GIT rev-parse --show-toplevel 2>/dev/null)
@@ -21,7 +20,7 @@ NEWHEX=$6
 
 INDEX_HTML=$RMED_DIFF_ROOT/index.html
 
-FILE=$(echo $FILEPATH | $TR '/' '_')
+FILE=$(echo $FILEPATH | $SED 's:/:_:g')
 
 if [ -f /usr/local/etc/rmed.vim ]; then
     RMED_VIM=/usr/local/etc/rmed.vim

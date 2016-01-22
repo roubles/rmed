@@ -6,9 +6,11 @@
 6. comment rmed.vim
 *7. install --prefix=
 *8. uninstall --prefix==
-9. Make sure browser opens in background in linux
-10. Create an index.html that lists all diffs below
+*9. Make sure browser opens in background in linux
+*10. Create an index.html that lists all diffs below
 *11. --no-date
-12. *--vim
-13. *--help
-14. *Hangs on .swp files and .nfs files
+*12. *--vim
+*13. *--help
+*14. *Hangs on .swp files and .nfs files
+*15. Remove tr
+*16. Update README.rd
